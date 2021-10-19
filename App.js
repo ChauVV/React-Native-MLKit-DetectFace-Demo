@@ -7,7 +7,7 @@ class ExampleApp extends PureComponent {
     super(props);
     this.state = {
       images: [],
-      currentStep: 1,
+      capturing: false,
     };
   }
 
@@ -17,12 +17,16 @@ class ExampleApp extends PureComponent {
       const data = await this.camera.takePictureAsync(options);
       let imgs = this.state.images;
       imgs = [...imgs, data];
-      this.setState({images: imgs});
+      this.setState({images: imgs, capturing: false});
     }
   };
 
+  reset = () => {
+    this.setState({images: [], capturing: false});
+  };
+
   render() {
-    const {images, currentStep} = this.state;
+    const {images, capturing} = this.state;
 
     return (
       <View style={styles.container}>
@@ -46,14 +50,16 @@ class ExampleApp extends PureComponent {
             buttonNegative: 'Cancel',
           }}
           onFacesDetected={data => {
-            if (data.faces.length === 1) {
+            if (data.faces.length >= 1) {
               const face = data.faces[0];
-              if (face.rollAngle > 0.4) {
+              console.log('run');
+              if (face.rollAngle > 0.3 && capturing === false) {
                 if (images.length === 0) {
                   if (face.yawAngle < -36) {
                     console.log('====================================');
                     console.log('====================================');
                     console.log('LEFT', data.faces[0].rollAngle);
+                    this.setState({capturing: true});
                     this.takePicture(0);
                   }
                 } else if (images.length === 1) {
@@ -61,6 +67,7 @@ class ExampleApp extends PureComponent {
                     console.log('====================================');
                     console.log('====================================');
                     console.log('RIGHT', data.faces[0].rollAngle);
+                    this.setState({capturing: true});
                     this.takePicture(1);
                   }
                 } else if (images.length === 2) {
@@ -68,6 +75,7 @@ class ExampleApp extends PureComponent {
                     console.log('====================================');
                     console.log('====================================');
                     console.log('CENTER', data.faces[0].rollAngle);
+                    this.setState({capturing: true});
                     this.takePicture(2);
                   }
                 }
@@ -86,10 +94,8 @@ class ExampleApp extends PureComponent {
           }
         />
         <View style={{flex: 0, flexDirection: 'row', justifyContent: 'center'}}>
-          <TouchableOpacity
-            onPress={this.takePicture.bind(this)}
-            style={styles.capture}>
-            <Text style={{fontSize: 14}}> SNAP </Text>
+          <TouchableOpacity onPress={() => this.reset()} style={styles.capture}>
+            <Text style={{fontSize: 14}}> Reset </Text>
           </TouchableOpacity>
         </View>
         <Text
@@ -108,31 +114,33 @@ class ExampleApp extends PureComponent {
             ? 'Turn Center'
             : 'DONE'
         }`}</Text>
-        <View
-          style={{
-            width: '100%',
-            height: 50,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 150,
-          }}>
-          <Image
-            style={{width: 150, height: 150, backgroundColor: 'gray'}}
-            source={images[0] ? images[0] : null}
-          />
-          <Image
-            style={{width: 150, height: 150, backgroundColor: 'gray'}}
-            source={images[2] ? images[2] : null}
-          />
-          <Image
-            style={{width: 150, height: 150, backgroundColor: 'gray'}}
-            source={images[1] ? images[1] : null}
-          />
-        </View>
+        {images[0] && (
+          <View
+            style={{
+              width: '100%',
+              height: 50,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 150,
+            }}>
+            <Image
+              style={{width: 150, height: 150, backgroundColor: 'gray'}}
+              source={images[0] ? images[0] : null}
+            />
+            <Image
+              style={{width: 150, height: 150, backgroundColor: 'gray'}}
+              source={images[2] ? images[2] : null}
+            />
+            <Image
+              style={{width: 150, height: 150, backgroundColor: 'gray'}}
+              source={images[1] ? images[1] : null}
+            />
+          </View>
+        )}
       </View>
     );
   }
