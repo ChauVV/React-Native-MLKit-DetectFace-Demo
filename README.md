@@ -6,7 +6,7 @@ Demo detect face using react-native-camera(https://github.com/react-native-camer
 
 ```bash
 $ yarn
-$ cd ios && pod install
+$ cd ios && pod install && cd ..
 $ yarn ios
 $ yarn android
 ```
